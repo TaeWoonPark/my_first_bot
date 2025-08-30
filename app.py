@@ -1,5 +1,6 @@
 import os
 import re
+from datetime import datetime
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
@@ -42,7 +43,12 @@ def callback():
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     recieved_message = event.message.text
-    send_message = recieved_message + f"ヤーコン！凄い！美味しい！「腸活最高」"
+
+    # 現在の日時を取得
+    current_time = datetime.now()
+    formatted_time = current_time.strftime("%Y年%m月%d日 %H時%M分%S秒")
+
+    send_message = f"{recieved_message}\n\n受信時刻: {formatted_time}\nヤーコン！凄い！美味しい！「腸活最高」"
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=send_message))
 
 
