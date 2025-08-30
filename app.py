@@ -2,25 +2,30 @@ import os
 import re
 from datetime import datetime
 from flask import Flask, request, abort
-from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
-from linebot.models import (
-    MessageEvent,
+from linebot.v3 import WebhookHandler
+from linebot.v3.exceptions import InvalidSignatureError
+from linebot.v3.messaging import (
+    ReplyMessageRequest,
+    Configuration,
+    MessagingApi,
+)
+from linebot.v3.messaging.models import (
     TextMessage,
-    TextSendMessage,
-    FlexSendMessage,
+    FlexMessage,
     QuickReply,
-    QuickReplyButton,
-    PostbackEvent,
+    QuickReplyItem,
     PostbackAction,
 )
+from linebot.v3.webhooks import MessageEvent, PostbackEvent
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
 app = Flask(__name__)
 
-line_bot_api = LineBotApi(os.environ["ACCESS_TOKEN"])
+# LINE Bot SDK v3の設定
+configuration = Configuration(access_token=os.environ["ACCESS_TOKEN"])
+line_bot_api = MessagingApi(configuration)
 handler = WebhookHandler(os.environ["CHANNEL_SECRET"])
 
 
@@ -64,7 +69,12 @@ def handle_message(event):
         send_message = (
             f"{recieved_message}\n\n受信時刻: {formatted_time}\nヤーコン！凄い！美味しい！「腸活最高」"
         )
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=send_message))
+
+        # v3での返信方法
+        request_body = ReplyMessageRequest(
+            reply_token=event.reply_token, messages=[TextMessage(text=send_message)]
+        )
+        line_bot_api.reply_message(request_body)
 
 
 @handler.add(PostbackEvent)
@@ -80,7 +90,7 @@ def handle_postback(event):
 
 def send_health_survey(reply_token):
     """腸活アンケートを送信"""
-    flex_message = FlexSendMessage(
+    flex_message = FlexMessage(
         alt_text="腸活に関するアンケートです",
         contents={
             "type": "bubble",
@@ -157,7 +167,9 @@ def send_health_survey(reply_token):
         },
     )
 
-    line_bot_api.reply_message(reply_token, flex_message)
+    # v3での返信方法
+    request_body = ReplyMessageRequest(reply_token=reply_token, messages=[flex_message])
+    line_bot_api.reply_message(request_body)
 
 
 def handle_survey_response(reply_token, data):
@@ -165,28 +177,43 @@ def handle_survey_response(reply_token, data):
     if "high_interest" in data:
         message = "素晴らしいです！腸活への関心が高いですね！\n\nヤーコンは腸活に最適な食材です。食物繊維が豊富で、腸内環境を整える効果があります。"
         quick_reply = QuickReply(
-            items=[QuickReplyButton(action=PostbackAction(label="ヤーコンについて詳しく", data="learn_more"))]
+            items=[QuickReplyItem(action=PostbackAction(label="ヤーコンについて詳しく", data="learn_more"))]
         )
-        line_bot_api.reply_message(reply_token, TextSendMessage(text=message, quick_reply=quick_reply))
+
+        # v3での返信方法
+        request_body = ReplyMessageRequest(
+            reply_token=reply_token, messages=[TextMessage(text=message, quick_reply=quick_reply)]
+        )
+        line_bot_api.reply_message(request_body)
 
     elif "medium_interest" in data:
         message = "腸活に少し関心があるのですね！\n\nヤーコンを始めてみませんか？自然な甘さで、お料理にも使いやすい食材です。腸活の第一歩としておすすめです！"
         quick_reply = QuickReply(
-            items=[QuickReplyButton(action=PostbackAction(label="ヤーコンについて詳しく", data="learn_more"))]
+            items=[QuickReplyItem(action=PostbackAction(label="ヤーコンについて詳しく", data="learn_more"))]
         )
-        line_bot_api.reply_message(reply_token, TextSendMessage(text=message, quick_reply=quick_reply))
+
+        # v3での返信方法
+        request_body = ReplyMessageRequest(
+            reply_token=reply_token, messages=[TextMessage(text=message, quick_reply=quick_reply)]
+        )
+        line_bot_api.reply_message(request_body)
 
     elif "low_interest" in data:
         message = "腸活に興味がないのですね。でも、健康な体づくりは大切です。\n\nヤーコンは美味しくて栄養豊富。まずは食べてみることから始めてみませんか？"
         quick_reply = QuickReply(
-            items=[QuickReplyButton(action=PostbackAction(label="ヤーコンについて詳しく", data="learn_more"))]
+            items=[QuickReplyItem(action=PostbackAction(label="ヤーコンについて詳しく", data="learn_more"))]
         )
-        line_bot_api.reply_message(reply_token, TextSendMessage(text=message, quick_reply=quick_reply))
+
+        # v3での返信方法
+        request_body = ReplyMessageRequest(
+            reply_token=reply_token, messages=[TextMessage(text=message, quick_reply=quick_reply)]
+        )
+        line_bot_api.reply_message(request_body)
 
 
 def send_yacon_info(reply_token):
     """ヤーコンの詳細情報を送信"""
-    flex_message = FlexSendMessage(
+    flex_message = FlexMessage(
         alt_text="ヤーコンについて詳しく説明します",
         contents={
             "type": "bubble",
@@ -257,7 +284,9 @@ def send_yacon_info(reply_token):
         },
     )
 
-    line_bot_api.reply_message(reply_token, flex_message)
+    # v3での返信方法
+    request_body = ReplyMessageRequest(reply_token=reply_token, messages=[flex_message])
+    line_bot_api.reply_message(request_body)
 
 
 if __name__ == "__main__":
