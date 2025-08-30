@@ -20,15 +20,19 @@ def index():
 
 @app.route("/callback", methods=["POST"])
 def callback():
+    """Messaging APIからの呼び出し関数"""
+    # LINEがリクエストの改ざんを防ぐために付与する署名を取得
     signature = request.headers["X-Line-Signature"]
+    # リクエストの内容をテキストで取得
     body = request.get_data(as_text=True)
-
-    app.logger.info("Request body: " + body)
+    # ログに出力
+    app.logger.info("Request body: "  body)
 
     try:
+        # signature と body を比較することで、リクエストがLINEから送信されたものであることを検証
         handler.handle(body, signature)
     except InvalidSignatureError:
-
+        # クライアントからのリクエストに誤りがあったことを示すエラーを返す
         abort(400)
 
     return "OK"
