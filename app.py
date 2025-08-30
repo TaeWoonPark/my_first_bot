@@ -26,7 +26,7 @@ def callback():
     # リクエストの内容をテキストで取得
     body = request.get_data(as_text=True)
     # ログに出力
-    app.logger.info("Request body: "  body)
+    app.logger.info("Request body: " + body)
 
     try:
         # signature と body を比較することで、リクエストがLINEから送信されたものであることを検証
