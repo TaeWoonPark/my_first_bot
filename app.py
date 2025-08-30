@@ -34,6 +34,33 @@ def index():
     return "You call index()"
 
 
+@app.route("/test")
+def test():
+    """環境変数とLINE Bot設定のテスト"""
+    try:
+        access_token = os.environ.get("ACCESS_TOKEN", "未設定")
+        channel_secret = os.environ.get("CHANNEL_SECRET", "未設定")
+
+        # トークンの長さを確認（セキュリティのため）
+        access_token_length = len(access_token) if access_token != "未設定" else 0
+        channel_secret_length = len(channel_secret) if channel_secret != "未設定" else 0
+
+        access_status = "設定済み" if access_token != "未設定" else "未設定"
+        secret_status = "設定済み" if channel_secret != "未設定" else "未設定"
+        api_status = "初期化済み" if line_bot_api else "未初期化"
+        handler_status = "初期化済み" if handler else "未初期化"
+
+        return f"""
+        <h1>LINE Bot 設定確認</h1>
+        <p><strong>ACCESS_TOKEN:</strong> {access_status} (長さ: {access_token_length})</p>
+        <p><strong>CHANNEL_SECRET:</strong> {secret_status} (長さ: {channel_secret_length})</p>
+        <p><strong>LINE Bot API:</strong> {api_status}</p>
+        <p><strong>Webhook Handler:</strong> {handler_status}</p>
+        """
+    except Exception as e:
+        return f"エラーが発生しました: {e}"
+
+
 @app.route("/callback", methods=["POST"])
 def callback():
     """Messaging APIからの呼び出し関数"""
