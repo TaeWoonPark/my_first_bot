@@ -28,7 +28,7 @@ def callback():
     
     try:
         handler.handle(body, signature)
-        expect InvalidiesError
+    except InvalidSignatureError:    
         
     abort(400)
 
